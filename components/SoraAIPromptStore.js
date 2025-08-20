@@ -1,15 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { products as catalog } from "../lib/catalog";
+import { products } from "../lib/catalog";
 
 export default function SoraAIPromptStore() {
-  // ---- Catalog (Edit to manage products) ----
-  const products = catalog;
-
-  const categories = [
-    "ทั้งหมด",
-    ...Array.from(new Set(products.map((p) => p.category))),
-  ];
+  const categories = ["ทั้งหมด", ...Array.from(new Set(products.map((p) => p.category)))];
 
   // ---- UI State ----
   const [q, setQ] = React.useState("");
@@ -110,12 +106,12 @@ export default function SoraAIPromptStore() {
           >
             รายละเอียด
           </button>
-          <a
+          <Link
             href={`/pay?pid=${p.id}`}
             className="flex-1 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-center"
           >
             ซื้อทันที
-          </a>
+          </Link>
         </div>
       </div>
     </motion.div>
@@ -131,49 +127,49 @@ export default function SoraAIPromptStore() {
             alt={product.title}
             className="w-full h-56 md:h-full object-cover"
           />
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold dark:text-gray-100">
-                {product.title}
-              </h3>
-              <Badge>{product.level}</Badge>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400">{product.tagline}</p>
-            <div className="flex flex-wrap gap-2">
-              {product.includes.map((x) => (
-                <span
-                  key={x}
-                  className="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs dark:bg-white/5 dark:text-gray-300"
-                >
-                  {x}
-                </span>
-              ))}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              ไฟล์ที่ได้รับ: {product.files.join(" ")}
-            </div>
-            <div className="flex items-baseline gap-3 pt-2">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                <Currency value={product.price} />
-              </div>
-              <div className="text-sm line-through text-gray-400">
-                <Currency value={product.originalPrice} />
-              </div>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <a
-                href={`/pay?pid=${product.id}`}
-                className="flex-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-center"
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-semibold dark:text-gray-100">
+              {product.title}
+            </h3>
+            <Badge>{product.level}</Badge>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">{product.tagline}</p>
+          <div className="flex flex-wrap gap-2">
+            {product.includes.map((x) => (
+              <span
+                key={x}
+                className="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs dark:bg-white/5 dark:text-gray-300"
               >
-                ซื้อทันที
-              </a>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium dark:bg:white/10 dark:hover:bg-white/20 dark:text-gray-100"
-              >
-                ปิด
-              </button>
+                {x}
+              </span>
+            ))}
+          </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            ไฟล์ที่ได้รับ: {product.files.join(" ")}
+          </div>
+          <div className="flex items-baseline gap-3 pt-2">
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              <Currency value={product.price} />
             </div>
+            <div className="text-sm line-through text-gray-400">
+              <Currency value={product.originalPrice} />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <Link
+              href={`/pay?pid=${product.id}`}
+              className="flex-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-center"
+            >
+              ซื้อทันที
+            </Link>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-900 font-medium dark:bg-white/10 dark:hover:bg-white/20 dark:text-gray-100"
+            >
+              ปิด
+            </button>
           </div>
         </div>
       </div>
@@ -189,16 +185,16 @@ export default function SoraAIPromptStore() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Store',
-            name: 'SoraAI Prompt Store',
-            url: 'https://example.com',
-            sameAs: ['https://github.com/Jacknarak/SoraAI'],
+            "@context": "https://schema.org",
+            "@type": "Store",
+            name: "SoraAI Prompt Store",
+            url: "https://example.com",
+            sameAs: ["https://github.com/Jacknarak/SoraAI"],
             offers: products.map((p) => ({
-              '@type': 'Offer',
+              "@type": "Offer",
               name: p.title,
               price: p.price,
-              priceCurrency: 'THB',
+              priceCurrency: "THB",
               url: `/pay?pid=${p.id}`,
             })),
           }),
@@ -233,7 +229,7 @@ export default function SoraAIPromptStore() {
               onClick={() => setDark((v) => !v)}
               className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-sm font-medium dark:bg-white/10 dark:hover:bg-white/20"
             >
-              {dark ? 'Light' : 'Dark'}
+              {dark ? "Light" : "Dark"}
             </button>
             <a
               href="#contact"
@@ -268,7 +264,8 @@ export default function SoraAIPromptStore() {
               transition={{ delay: 0.1 }}
               className="text-gray-600 text-lg dark:text-gray-300"
             >
-              รวมชุดคำสั่งคุณภาพสูงสำหรับธุรกิจ เนื้อหา และครีเอทีฟ พร้อมเวิร์กโฟลว์อัตโนมัติที่เชื่อมต่อ GitHub, Google Sheets, Render ได้จริง
+              รวมชุดคำสั่งคุณภาพสูงสำหรับธุรกิจ เนื้อหา และครีเอทีฟ พร้อมเวิร์กโฟลว์อัตโนมัติที่เชื่อมต่อ GitHub,
+              Google Sheets, Render ได้จริง
             </motion.p>
             <div className="flex flex-col sm:flex-row gap-3">
               <a
@@ -302,9 +299,7 @@ export default function SoraAIPromptStore() {
                   className="h-10 w-10 rounded-full object-cover ring-2 ring-white/60"
                 />
               ))}
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                ผู้ใช้จากทีมครีเอทีฟ/สตาร์ทอัปทั่วเอเชีย
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">ผู้ใช้จากทีมครีเอทีฟ/สตาร์ทอัปทั่วเอเชีย</div>
             </div>
           </div>
           <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="relative">
@@ -327,14 +322,8 @@ export default function SoraAIPromptStore() {
       <section className="mx-auto max-w-7xl px-4 pb-12">
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            {
-              t: "แนวคิดลึก ใช้ได้จริง",
-              s: "Framework + Prompt ที่พิสูจน์แล้วในโปรเจกต์จริง",
-            },
-            {
-              t: "อัตโนมัติทั้งสโคป",
-              s: "ตัวอย่างเวิร์กโฟลว์ เชื่อม GitHub / Render / Sheets",
-            },
+            { t: "แนวคิดลึก ใช้ได้จริง", s: "Framework + Prompt ที่พิสูจน์แล้วในโปรเจกต์จริง" },
+            { t: "อัตโนมัติทั้งสโคป", s: "ตัวอย่างเวิร์กโฟลว์ เชื่อม GitHub / Render / Sheets" },
             { t: "เรียนรู้แบบก้าวกระโดด", s: "วิดีโอสั้น + เคสสตาดี + โค้ดจริง" },
           ].map((x) => (
             <div key={x.t} className="p-6 rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-white/10">
@@ -430,7 +419,7 @@ export default function SoraAIPromptStore() {
           <div className="p-6 rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-white/10">
             <div className="font-semibold mb-2">ถัดไป</div>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
-              <li>• PromptPack: "AI Video Scripts 100 แบบ"</li>
+              <li>• PromptPack: AI Video Scripts 100 แบบ</li>
               <li>• Engine: Resume/NFT/Picture Modules</li>
               <li>• ชำระเงิน: Stripe + PromptPay + LINE OA</li>
             </ul>
@@ -439,7 +428,7 @@ export default function SoraAIPromptStore() {
             <div className="font-semibold mb-2">อัปเดตล่าสุด</div>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
               <li>• เปิดร้าน SoraAI Prompt Store (v1)</li>
-              <li>• เพิ่มวิดีโอเดโม & หน้าตั้งค่า Dark Mode</li>
+              <li>• เพิ่มวิดีโอเดโม & ตั้งค่า Dark Mode</li>
               <li>• ปรับปรุง UI การค้นหา กรอง เรียงสินค้า</li>
             </ul>
           </div>
@@ -455,15 +444,8 @@ export default function SoraAIPromptStore() {
               <div className="opacity-90">รับข่าวของฟรี เทคนิค และโค้ดใหม่ก่อนใคร</div>
             </div>
             <form className="flex gap-3" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                required
-                placeholder="อีเมลของคุณ"
-                className="flex-1 px-4 py-3 rounded-xl text-gray-900"
-              />
-              <button className="px-5 py-3 rounded-xl bg-black/80 hover:bg-black font-semibold">
-                สมัคร
-              </button>
+              <input type="email" required placeholder="อีเมลของคุณ" className="flex-1 px-4 py-3 rounded-xl text-gray-900" />
+              <button className="px-5 py-3 rounded-xl bg-black/80 hover:bg-black font-semibold">สมัคร</button>
             </form>
           </div>
         </div>
@@ -476,32 +458,9 @@ export default function SoraAIPromptStore() {
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            {
-              name: "Starter",
-              price: 0,
-              features: ["สินค้าฟรีเมื่อมี", "อัปเดตข่าวสาร", "ชุมชนผู้ใช้"],
-              cta: "เริ่มฟรี",
-            },
-            {
-              name: "Pro",
-              price: 1490,
-              features: [
-                "Prompt Pack 1 รายการ",
-                "อัปเดต 6 เดือน",
-                "ซัพพอร์ตอีเมล",
-              ],
-              cta: "เลือก Pro",
-            },
-            {
-              name: "Elite",
-              price: 4990,
-              features: [
-                "เข้าถึงสินค้าทั้งร้าน 1 เดือน",
-                "อัปเดต 12 เดือน",
-                "ที่ปรึกษา 1 ชม.",
-              ],
-              cta: "เลือก Elite",
-            },
+            { name: "Starter", price: 0, features: ["สินค้าฟรีเมื่อมี", "อัปเดตข่าวสาร", "ชุมชนผู้ใช้"], cta: "เริ่มฟรี" },
+            { name: "Pro", price: 1490, features: ["Prompt Pack 1 รายการ", "อัปเดต 6 เดือน", "ซัพพอร์ตอีเมล"], cta: "เลือก Pro" },
+            { name: "Elite", price: 4990, features: ["เข้าถึงสินค้าทั้งร้าน 1 เดือน", "อัปเดต 12 เดือน", "ที่ปรึกษา 1 ชม."], cta: "เลือก Elite" },
           ].map((t, i) => (
             <div
               key={t.name}
@@ -514,12 +473,7 @@ export default function SoraAIPromptStore() {
                 {i === 1 && <Badge>แนะนำ</Badge>}
               </div>
               <div className="text-3xl font-extrabold py-3">
-                {t.price
-                  ? t.price.toLocaleString("th-TH", {
-                      style: "currency",
-                      currency: "THB",
-                    })
-                  : "ฟรี"}
+                {t.price ? t.price.toLocaleString("th-TH", { style: "currency", currency: "THB" }) : "ฟรี"}
               </div>
               <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                 {t.features.map((f) => (
@@ -532,9 +486,7 @@ export default function SoraAIPromptStore() {
               <a
                 href="#checkout"
                 className={`mt-6 block text-center px-4 py-2 rounded-xl font-semibold ${
-                  i === 1
-                    ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                    : "bg-gray-900/90 text-white hover:bg-gray-900"
+                  i === 1 ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-gray-900/90 text-white hover:bg-gray-900"
                 }`}
               >
                 {t.cta}
@@ -551,27 +503,12 @@ export default function SoraAIPromptStore() {
         </div>
         <div className="grid md:grid-cols-2 gap-6">
           {[
-            {
-              q: "จะได้รับไฟล์อะไรหลังชำระเงิน?",
-              a: "ลูกค้าจะได้รับไฟล์ตามที่ระบุในแต่ละสินค้า เช่น PDF/DOCX/MD รวมถึงลิงก์ GitHub (ถ้ามี) เพื่อยืนยันไฟล์จริง 100%",
-            },
-            {
-              q: "ขอใบเสร็จ/ออกเอกสารได้หรือไม่?",
-              a: "ได้ เราสามารถออกเอกสาร/ใบกำกับอย่างไม่เป็นทางการให้หลังการสั่งซื้อ",
-            },
-            {
-              q: "มีอัปเดตฟรีหรือไม่?",
-              a: "มีตามระยะเวลาที่ระบุในรายละเอียดสินค้า (เช่น 3–12 เดือน)",
-            },
-            {
-              q: "ขอปรับแต่งให้เข้ากับงานเราได้ไหม?",
-              a: "ได้ แนะนำบริการ Custom Prompt + Integration เพื่อปรับให้เหมาะกับธุรกิจของคุณ",
-            },
+            { q: "จะได้รับไฟล์อะไรหลังชำระเงิน?", a: "ลูกค้าจะได้รับไฟล์ตามที่ระบุในแต่ละสินค้า เช่น PDF/DOCX/MD รวมถึงลิงก์ GitHub (ถ้ามี) เพื่อยืนยันไฟล์จริง 100%" },
+            { q: "ขอใบเสร็จ/ออกเอกสารได้หรือไม่?", a: "ได้ เราสามารถออกเอกสาร/ใบกำกับอย่างไม่เป็นทางการให้หลังการสั่งซื้อ" },
+            { q: "มีอัปเดตฟรีหรือไม่?", a: "มีตามระยะเวลาที่ระบุในรายละเอียดสินค้า (เช่น 3–12 เดือน)" },
+            { q: "ขอปรับแต่งให้เข้ากับงานเราได้ไหม?", a: "ได้ แนะนำบริการ Custom Prompt + Integration เพื่อปรับให้เหมาะกับธุรกิจของคุณ" },
           ].map((item) => (
-            <div
-              key={item.q}
-              className="p-6 rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-white/10"
-            >
+            <div key={item.q} className="p-6 rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-white/10">
               <div className="font-semibold mb-2">{item.q}</div>
               <div className="text-gray-600 text-sm dark:text-gray-400">{item.a}</div>
             </div>
@@ -584,27 +521,16 @@ export default function SoraAIPromptStore() {
         <div className="grid md:grid-cols-2 gap-6 items-center">
           <div className="space-y-2">
             <h3 className="text-xl md:text-2xl font-bold">ต้องการเดโมหรือใบเสนอราคา?</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              ทักหาเราเพื่อรับเดโม/ลิงก์ชำระเงินจริง (Stripe/PromptPay/LINE OA)
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">ทักหาเราเพื่อรับเดโม/ลิงก์ชำระเงินจริง (Stripe/PromptPay/LINE OA)</p>
           </div>
           <div className="flex flex-wrap gap-3 md:justify-end">
-            <a
-              href="#line"
-              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold"
-            >
+            <a href="#line" className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold">
               แชทผ่าน LINE OA
             </a>
-            <a
-              href="#github"
-              className="px-4 py-2 rounded-xl bg-gray-900 hover:bg-black text-white font-semibold"
-            >
+            <a href="#github" className="px-4 py-2 rounded-xl bg-gray-900 hover:bg-black text-white font-semibold">
               ดูตัวอย่างบน GitHub
             </a>
-            <a
-              href="#email"
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
-            >
+            <a href="#email" className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
               อีเมลทีมงาน
             </a>
           </div>
@@ -615,9 +541,7 @@ export default function SoraAIPromptStore() {
       <footer className="border-t border-black/5 py-10 text-sm text-gray-600 dark:text-gray-400 dark:border-white/10">
         <div className="mx-auto max-w-7xl px-4 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-0 md:justify-between">
           <div className="space-y-2 text-center md:text-left">
-            <div className="font-semibold text-gray-900 dark:text-gray-100">
-              SoraAI Prompt Store
-            </div>
+            <div className="font-semibold text-gray-900 dark:text-gray-100">SoraAI Prompt Store</div>
             <div>© {new Date().getFullYear()} SoraAI. สงวนลิขสิทธิ์</div>
           </div>
           <div className="flex gap-6">
@@ -635,12 +559,7 @@ export default function SoraAIPromptStore() {
       </footer>
 
       {/* MODAL */}
-      {activeProduct && (
-        <Modal
-          product={activeProduct}
-          onClose={() => setModal(null)}
-        />
-      )}
+      {activeProduct && <Modal product={activeProduct} onClose={() => setModal(null)} />}
     </div>
   );
 }
