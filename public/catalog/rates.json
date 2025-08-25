@@ -1,0 +1,23 @@
+{
+  "source": "frankfurter",
+  "THB_USD": 0.03064,
+  "updatedAt": "2025-08-22T00:00:00Z",
+  "fxPolicy": {
+    "base": "THB",
+    "usd": {
+      "marginPct": 0.06,
+      "flatUSD": 0.3,
+      "minUSD": 0,
+      "round": {
+        "mode": "ceil-step",
+        "step": 0.5
+      },
+      "applyOnManualUSD": false
+    },
+    "thb": {
+      "round": {
+        "mode": "none"
+      }
+    }
+  }
+}

@@ -1,94 +1,201 @@
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { byId } from "../lib/catalog";
+// /pages/pay.js
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
+import {
+  getProductById,
+  getRates,
+  buildDisplayPrice,
+  resolveDownloadTarget,
+  typeDisplay,
+  formatTHB,
+  formatUSD,
+} from '../lib/catalog';
 
 export default function PayPage() {
   const router = useRouter();
   const { pid } = router.query;
-  const product = pid ? byId[pid] : null;
 
-  if (!product) {
+  const [product, setProduct] = useState(null);
+  const [rates, setRates] = useState(null);
+  const [currency, setCurrency] = useState('THB');
+  const [loading, setLoading] = useState(true);
+
+  // โหลดสินค้า
+  useEffect(() => {
+    let mounted = true;
+    async function run() {
+      if (!pid) return;
+      setLoading(true);
+      const p = await getProductById(String(pid));
+      const r = await getRates();
+      if (!mounted) return;
+      setProduct(p || null);
+      setRates(r || null);
+      // sync currency จาก localStorage ให้สอดคล้องกับหน้า Home
+      try {
+        const saved = localStorage.getItem('inkchain:currency');
+        if (saved === 'USD' || saved === 'THB') setCurrency(saved);
+      } catch {}
+      setLoading(false);
+    }
+    run();
+    return () => { mounted = false; };
+  }, [pid]);
+
+  const priceInfo = useMemo(() => {
+    if (!product || !rates) return null;
+    return buildDisplayPrice(product, currency, rates);
+  }, [product, rates, currency]);
+
+  const dl = useMemo(() => resolveDownloadTarget(product), [product]);
+
+  function toggleCurrency() {
+    const next = currency === 'THB' ? 'USD' : 'THB';
+    setCurrency(next);
+    try { localStorage.setItem('inkchain:currency', next); } catch {}
+  }
+
+  if (loading) {
     return (
-      <div className="min-h-screen grid place-items-center p-6">
-        <div className="max-w-md w-full text-center space-y-4">
-          <div className="text-xl font-semibold">ไม่พบสินค้า</div>
-          <Link href="/" className="px-4 py-2 rounded-xl bg-indigo-600 text-white inline-block">
-            กลับหน้าแรก
-          </Link>
+      <div className="mx-auto max-w-3xl px-4 py-12">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 w-40 bg-gray-200 rounded" />
+          <div className="h-8 w-3/4 bg-gray-200 rounded" />
+          <div className="h-48 bg-gray-200 rounded" />
         </div>
       </div>
     );
   }
 
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-12">
+        <h1 className="text-2xl font-bold">ไม่พบสินค้า</h1>
+        <p className="mt-2 text-gray-600">PID: {String(pid || '')}</p>
+        <Link href="/" className="mt-6 inline-block rounded-xl border px-4 py-2">กลับหน้าแรก</Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-white dark:from-gray-950 dark:via-gray-950 dark:to-gray-950 p-6">
-      <div className="max-w-3xl mx-auto">
-        <header className="flex items-center justify-between mb-6">
-          <Link href="/" className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20">
-            ← กลับหน้าแรก
-          </Link>
-          <div className="flex items-center gap-3">
-            <img src={product.image} alt={product.title} className="h-16 w-28 object-cover rounded-lg" />
-            <div>
-              <div className="font-semibold">{product.title}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">{product.tagline}</div>
-            </div>
-          </div>
-        </header>
+    <div className="mx-auto max-w-3xl px-4 py-10">
+      <Link href="/" className="text-sm text-gray-500 hover:underline">← กลับหน้าแรก</Link>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* วิธีชำระเงิน: PromptPay */}
-          <div className="p-6 rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-white/10">
-            <div className="font-semibold mb-2">PromptPay</div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">สแกนเพื่อชำระเงินตามยอด</p>
-            <div className="pt-4">
-              <img
-                src={product.promptpayQR || "/qr-promptpay.png"}
-                alt="PromptPay QR"
-                className="w-full max-w-xs rounded-xl ring-1 ring-gray-200 mx-auto"
-              />
-            </div>
-          </div>
+      <div className="mt-3 flex items-center justify-between">
+        <h1 className="text-2xl md:text-3xl font-bold">{product.title}</h1>
+        <button
+          onClick={toggleCurrency}
+          className="rounded-xl border px-3 py-1.5 text-sm hover:bg-gray-50"
+          title="สลับสกุลเงิน"
+        >
+          {currency === 'THB' ? 'THB ฿' : 'USD $'}
+        </button>
+      </div>
 
-          {/* สรุปรายการ/ปุ่มทดสอบ */}
-          <div className="p-6 rounded-2xl bg-white ring-1 ring-gray-200 dark:bg-gray-900 dark:ring-white/10">
-            <div className="font-semibold mb-2">ชำระเงิน</div>
-            <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold">
-                {product.price.toLocaleString("th-TH", { style: "currency", currency: "THB" })}
+      <p className="mt-2 text-gray-600">
+        {(() => {
+          const parts = [];
+          const t = typeDisplay(product);
+          if (t) parts.push(t);
+          if (product.category) parts.push(product.category);
+          return parts.join(' • ');
+        })()}
+        {product.level ? ` • ระดับ: ${product.level}` : ''}
+      </p>
+
+      {/* ภาพตัวอย่าง */}
+      <div className="mt-6 rounded-2xl overflow-hidden border">
+        <img src={product.image} alt={product.title} className="w-full h-auto object-cover" />
+      </div>
+
+      {/* ราคา + สรุป FX */}
+      <div className="mt-6 rounded-2xl border p-4">
+        {priceInfo ? (
+          <>
+            <div className="text-xl font-bold">
+              {priceInfo.display}
+            </div>
+            <div className="mt-1 text-xs text-gray-500">
+              {currency === 'USD' && priceInfo.explain
+                ? `แปลงจาก THB ที่อัตรา ${priceInfo.explain.rate} + ${Math.round(priceInfo.explain.marginPct * 100)}% + $${priceInfo.explain.flatUSD.toFixed(2)} (source: ${priceInfo.explain.source || 'rates.json'})`
+                : `ราคา THB จากชีต (หรือกำหนดใน meta)`}
+            </div>
+          </>
+        ) : (
+          <div className="text-gray-500">กำลังคำนวณราคา…</div>
+        )}
+      </div>
+
+      {/* พื้นที่ชำระเงิน */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* ฝั่งซ้าย: QR PromptPay (THB) */}
+        <div className="rounded-2xl border p-4">
+          <h2 className="font-semibold">ชำระเงิน</h2>
+          {currency === 'THB' ? (
+            <>
+              <p className="mt-1 text-sm text-gray-600">สแกน QR เพื่อชำระด้วย PromptPay</p>
+              <div className="mt-4 rounded-xl overflow-hidden border">
+                <img src="/qr-promptpay.png" alt="PromptPay QR" className="w-full h-auto" />
               </div>
-              <div className="text-sm line-through text-gray-400">
-                {product.originalPrice.toLocaleString("th-TH", { style: "currency", currency: "THB" })}
-              </div>
-            </div>
-            <ul className="mt-4 text-sm text-gray-700 dark:text-gray-300 list-disc pl-5 space-y-1">
-              {product.includes.map((i) => (
-                <li key={i}>{i}</li>
-              ))}
-            </ul>
-
-            <div className="mt-6 space-y-3">
-              <Link
-                href={`/success?pid=${product.id}`}
-                className="w-full block text-center px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
-              >
-                ชำระเงินสำเร็จ (ทดสอบ)
-              </Link>
-              <Link
-                href="/"
-                className="w-full block text-center px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20"
-              >
-                กลับไปเลือกสินค้าอื่น
-              </Link>
-            </div>
-          </div>
+            </>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-gray-600">
+                ช่องทางจ่าย USD (PingPong/Stripe) จะเปิดใช้งานเร็วๆ นี้ — ขณะนี้ขอแนะนำให้
+                <button onClick={toggleCurrency} className="underline mx-1">สลับเป็น THB</button>
+                เพื่อชำระด้วย PromptPay
+                {product.gumroad ? (
+                  <> หรือซื้อผ่าน <a className="underline" href={product.gumroad} target="_blank" rel="noopener noreferrer">Gumroad</a></>
+                ) : null}
+              </p>
+            </>
+          )}
         </div>
 
-        <p className="text-xs text-gray-500 mt-6">
-          * หน้านี้เป็นเดโม — เปิดใช้ Stripe/LINE OA ได้ภายหลัง
-        </p>
+        {/* ฝั่งขวา: ปุ่มดาวน์โหลด / ซื้อบน Gumroad */}
+        <div className="rounded-2xl border p-4">
+          <h2 className="font-semibold">หลังชำระเงิน</h2>
+          <p className="mt-1 text-sm text-gray-600">
+            กดปุ่มด้านล่างเพื่อไปยังไฟล์ดาวน์โหลด (ตอนนี้ยังไม่ตรวจหลักฐานอัตโนมัติ)
+          </p>
+
+          <div className="mt-4 flex flex-col gap-3">
+            {dl.external ? (
+              <a
+                href={dl.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl bg-black text-white px-4 py-2 text-center text-sm hover:bg-gray-800"
+              >
+                ดาวน์โหลดไฟล์
+              </a>
+            ) : (
+              <Link
+                href={dl.href || '#'}
+                className="rounded-xl bg-black text-white px-4 py-2 text-center text-sm hover:bg-gray-800"
+              >
+                ดาวน์โหลดไฟล์
+              </Link>
+            )}
+
+            {product.gumroad ? (
+              <a
+                href={product.gumroad}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl border px-4 py-2 text-center text-sm hover:bg-gray-50"
+              >
+                Buy on Gumroad (USD)
+              </a>
+            ) : null}
+          </div>
+
+          <div className="mt-3 text-xs text-gray-500">
+            หมายเหตุ: จะเพิ่มระบบอัปโหลดสลิป/ตรวจสอบการชำระเงินอัตโนมัติในลำดับถัดไป
+          </div>
+        </div>
       </div>
     </div>
   );

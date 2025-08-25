@@ -2,15 +2,17 @@
   "name": "soraai-prompt-store",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": "20.x" },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/update-rates.mjs && node scripts/verify-catalog.mjs",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
     "verify:catalog": "node scripts/verify-catalog.mjs",
-    "sync:catalog": "node scripts/verify-catalog.mjs",
-    "prebuild": "node scripts/verify-catalog.mjs"
+    "update:rates": "node scripts/update-rates.mjs",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "dependencies": {
     "framer-motion": "^12.23.12",
