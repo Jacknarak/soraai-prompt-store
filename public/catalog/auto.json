@@ -1,86 +1,76 @@
 {
-  "generatedAt": "2025-08-25T13:05:39.637Z",
   "products": [
-    {
-      "id": "P-001",
-      "sku": "P-001",
-      "type": "Prompt",
-      "title": "100 Business Prompt \"Marketing & Sales\"",
-      "category": "Prompt Pack",
-      "level": "Elite",
-      "priceTHB": 119,
-      "priceUSD": 0,
-      "image": "/images/P-001-cover.webp",
-      "file": "/products/prompts/P-001.7z",
-      "nftUrl": "",
-      "rating": 5,
-      "sales": 0,
-      "includes": [
-        "100 Prompts .pdf + README-TH + USAGE-NOTES TH"
-      ],
-      "gumroad": "",
-      "sort": 50
-    },
-    {
-      "id": "P-002",
-      "sku": "P-002",
-      "type": "Ebook",
-      "title": "100 Business Prompt \"Growth & Monetization\"",
-      "category": "Ebook",
-      "level": "Pro",
-      "priceTHB": 139,
-      "priceUSD": 0,
-      "image": "/images/P-002-cover.webp",
-      "file": "/products/prompts/P-002.7z",
-      "nftUrl": "",
-      "rating": 5,
-      "sales": 0,
-      "includes": [
-        "100 Prompts .pdf + README-TH + USAGE-NOTES TH"
-      ],
-      "gumroad": "",
-      "sort": 50
-    },
-    {
-      "id": "P-003",
-      "sku": "P-003",
-      "type": "Other",
-      "title": "100 Business Prompt \"Operations & Automation\"",
-      "category": "Prompt Pack",
-      "level": "Advance",
-      "priceTHB": 159,
-      "priceUSD": 0,
-      "image": "/images/P-003-cover.webp",
-      "file": "/products/prompts/P-003.7z",
-      "nftUrl": "",
-      "rating": 5,
-      "sales": 0,
-      "includes": [
-        "100 Prompts .pdf + README-TH + USAGE-NOTES TH"
-      ],
-      "gumroad": "",
-      "sort": 50
-    },
     {
       "id": "E-002",
       "sku": "E-002",
       "type": "Ebook",
-      "title": "AI for Startups",
-      "category": "Ebook",
-      "level": "Beginner",
-      "priceTHB": 299,
+      "title": "E-002",
+      "category": "",
+      "level": "",
+      "priceTHB": 0,
       "priceUSD": 0,
       "image": "/images/E-002-cover.webp",
       "file": "/products/ebooks/E-002.7z",
       "nftUrl": "",
       "rating": 5,
       "sales": 0,
-      "includes": [
-        "PDF 120 หน้า",
-        "Case Studies"
-      ],
+      "includes": "",
       "gumroad": "",
-      "sort": 40
+      "sort": 0
+    },
+    {
+      "id": "P-001",
+      "sku": "P-001",
+      "type": "Prompt",
+      "title": "P-001",
+      "category": "",
+      "level": "",
+      "priceTHB": 0,
+      "priceUSD": 0,
+      "image": "/images/P-001-cover.webp",
+      "file": "/products/prompts/P-001.7z",
+      "nftUrl": "",
+      "rating": 5,
+      "sales": 0,
+      "includes": "",
+      "gumroad": "",
+      "sort": 0
+    },
+    {
+      "id": "P-002",
+      "sku": "P-002",
+      "type": "Prompt",
+      "title": "P-002",
+      "category": "",
+      "level": "",
+      "priceTHB": 0,
+      "priceUSD": 0,
+      "image": "/images/P-002-cover.webp",
+      "file": "/products/prompts/P-002.7z",
+      "nftUrl": "",
+      "rating": 5,
+      "sales": 0,
+      "includes": "",
+      "gumroad": "",
+      "sort": 0
+    },
+    {
+      "id": "P-003",
+      "sku": "P-003",
+      "type": "Prompt",
+      "title": "P-003",
+      "category": "",
+      "level": "",
+      "priceTHB": 0,
+      "priceUSD": 0,
+      "image": "/images/P-003-cover.webp",
+      "file": "/products/prompts/P-003.7z",
+      "nftUrl": "",
+      "rating": 5,
+      "sales": 0,
+      "includes": "",
+      "gumroad": "",
+      "sort": 0
     }
   ]
 }

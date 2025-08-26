@@ -6,11 +6,11 @@ import { useRouter } from 'next/router';
 import {
   getProductById,
   getRates,
-  buildDisplayPrice,
   resolveDownloadTarget,
   typeDisplay,
   formatTHB,
   formatUSD,
+  computeUSDFromTHBWithPolicy
 } from '../lib/catalog';
 
 export default function PayPage() {
@@ -22,18 +22,15 @@ export default function PayPage() {
   const [currency, setCurrency] = useState('THB');
   const [loading, setLoading] = useState(true);
 
-  // โหลดสินค้า
   useEffect(() => {
     let mounted = true;
     async function run() {
       if (!pid) return;
       setLoading(true);
-      const p = await getProductById(String(pid));
-      const r = await getRates();
+      const [p, r] = await Promise.all([getProductById(String(pid)), getRates()]);
       if (!mounted) return;
       setProduct(p || null);
       setRates(r || null);
-      // sync currency จาก localStorage ให้สอดคล้องกับหน้า Home
       try {
         const saved = localStorage.getItem('inkchain:currency');
         if (saved === 'USD' || saved === 'THB') setCurrency(saved);
@@ -44,18 +41,20 @@ export default function PayPage() {
     return () => { mounted = false; };
   }, [pid]);
 
-  const priceInfo = useMemo(() => {
-    if (!product || !rates) return null;
-    return buildDisplayPrice(product, currency, rates);
-  }, [product, rates, currency]);
-
-  const dl = useMemo(() => resolveDownloadTarget(product), [product]);
-
   function toggleCurrency() {
     const next = currency === 'THB' ? 'USD' : 'THB';
     setCurrency(next);
     try { localStorage.setItem('inkchain:currency', next); } catch {}
   }
+
+  const priceView = useMemo(() => {
+    if (!product || !rates) return null;
+    const thb = Number(product.priceTHB) || 0;
+    const usd = thb > 0 ? computeUSDFromTHBWithPolicy(thb, rates, { roundingMode: 'ceilPoint99' }) : null;
+    return { thb, usd };
+  }, [product, rates]);
+
+  const dl = useMemo(() => resolveDownloadTarget(product), [product]);
 
   if (loading) {
     return (
@@ -78,6 +77,10 @@ export default function PayPage() {
       </div>
     );
   }
+
+  const rateDate = priceView?.usd?.rateUpdatedAt
+    ? new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium' }).format(new Date(priceView.usd.rateUpdatedAt))
+    : '';
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -112,16 +115,27 @@ export default function PayPage() {
 
       {/* ราคา + สรุป FX */}
       <div className="mt-6 rounded-2xl border p-4">
-        {priceInfo ? (
+        {priceView ? (
           <>
-            <div className="text-xl font-bold">
-              {priceInfo.display}
-            </div>
-            <div className="mt-1 text-xs text-gray-500">
-              {currency === 'USD' && priceInfo.explain
-                ? `แปลงจาก THB ที่อัตรา ${priceInfo.explain.rate} + ${Math.round(priceInfo.explain.marginPct * 100)}% + $${priceInfo.explain.flatUSD.toFixed(2)} (source: ${priceInfo.explain.source || 'rates.json'})`
-                : `ราคา THB จากชีต (หรือกำหนดใน meta)`}
-            </div>
+            {currency === 'USD' ? (
+              <>
+                <div className="text-xl font-bold">
+                  {priceView.usd ? `~${formatUSD(priceView.usd.usd)}` : '—'}
+                </div>
+                <div className="mt-1 text-xs text-gray-500">
+                  {priceView.usd ? `คำนวณจาก THB ที่เรท ${priceView.usd.rate.toFixed(4)} ${rateDate ? `• rate: ${rateDate}` : ''}` : 'ไม่พบข้อมูลเรท'}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-xl font-bold">
+                  {formatTHB(priceView.thb)}
+                </div>
+                <div className="mt-1 text-xs text-gray-500">
+                  {priceView.usd ? `≈ ${formatUSD(priceView.usd.usd)} ${rateDate ? `• rate: ${rateDate}` : ''}` : ''}
+                </div>
+              </>
+            )}
           </>
         ) : (
           <div className="text-gray-500">กำลังคำนวณราคา…</div>

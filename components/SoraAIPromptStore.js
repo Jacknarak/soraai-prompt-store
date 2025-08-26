@@ -10,12 +10,12 @@ import {
   youTubeThumb,
   PRODUCT_TYPES, typeLabel, typeDisplay,
   getRates,
-  buildDisplayPrice,        // ใช้แสดงชื่อชนิดที่อ่านง่าย (Prompt/Ebook/…)
+  computeUSDFromTHBWithPolicy, // ใช้แทน buildDisplayPrice
 } from '../lib/catalog';
 
-function sortPriceTHB(product, rates) {
-  const v = buildDisplayPrice(product, 'THB', rates).main?.value;
-  return typeof v === 'number' ? v : 0;
+function sortPriceTHB(product) {
+  const v = Number(product?.priceTHB) || 0;
+  return v;
 }
 
 export default function SoraAIPromptStore() {
@@ -33,7 +33,7 @@ export default function SoraAIPromptStore() {
     return () => { on = false; };
   }, []);
 
-  // โหลดอัตราแลกเปลี่ยน/นโยบาย
+  // โหลดอัตราแลกเปลี่ยน
   useEffect(() => {
     let on = true;
     getRates()
@@ -41,6 +41,21 @@ export default function SoraAIPromptStore() {
       .catch(() => {}); // ถ้าโหลดเรทไม่ได้ หน้าเพจยังแสดง THB ได้
     return () => { on = false; };
   }, []);
+
+  // sync currency กับ localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('inkchain:currency');
+      if (saved === 'USD' || saved === 'THB') setCurrency(saved);
+    } catch {}
+  }, []);
+  function toggleCurrency() {
+    setCurrency(c => {
+      const next = c === 'THB' ? 'USD' : 'THB';
+      try { localStorage.setItem('inkchain:currency', next); } catch {}
+      return next;
+    });
+  }
 
   const storeName = useMemo(() => catalog?.store?.name || 'InkChain AI Store', [catalog]);
   const products  = useMemo(() => catalog?.products || [], [catalog]);
@@ -54,19 +69,16 @@ export default function SoraAIPromptStore() {
   const [query,      setQuery]      = useState('');
   const [sortKey,    setSortKey]    = useState('pop');
 
-  // รายการชนิดที่มีในข้อมูล (เรียงตาม PRODUCT_TYPES)
   const typeOptions = useMemo(() => {
     const present = new Set(products.map(p => (p.type || 'Prompt')));
     return ['ทั้งหมด', ...PRODUCT_TYPES.filter(t => present.has(t))];
   }, [products]);
 
-  // หมวดหมู่ (จาก p.category)
   const categories = useMemo(() => {
     const set = new Set(products.map(p => p.category).filter(Boolean));
     return ['ทั้งหมด', ...Array.from(set)];
   }, [products]);
 
-  // ตัวเลขสรุป
   const stats = useMemo(() => {
     const totalSales = products.reduce((s, p) => s + (Number(p.sales) || 0), 0);
     const avgRating  = products.length
@@ -75,7 +87,6 @@ export default function SoraAIPromptStore() {
     return { customers: Math.max(totalSales, 3000), avgRating, updates: Math.max(products.length, 50) };
   }, [products]);
 
-  // กรอง/ค้นหา/เรียง
   const filtered = useMemo(() => {
     let list = [...products];
     if (typeFilter !== 'ทั้งหมด') list = list.filter(p => (p.type || 'Prompt') === typeFilter);
@@ -86,17 +97,14 @@ export default function SoraAIPromptStore() {
         .some(t => String(t).toLowerCase().includes(q)));
     }
     switch (sortKey) {
-      case 'priceAsc':  list.sort((a,b) => sortPriceTHB(a, rates) - sortPriceTHB(b, rates));
-  break;
-      case 'priceDesc': list.sort((a,b) => sortPriceTHB(b, rates) - sortPriceTHB(a, rates));
-  break;
+      case 'priceAsc':  list.sort((a,b) => sortPriceTHB(a) - sortPriceTHB(b)); break;
+      case 'priceDesc': list.sort((a,b) => sortPriceTHB(b) - sortPriceTHB(a)); break;
       case 'rating':    list.sort((a,b)=> (b.rating||0)-(a.rating||0)); break;
       default:          list.sort((a,b)=> (b.sales||0)-(a.sales||0));
     }
     return list;
   }, [products, typeFilter, catFilter, query, sortKey]);
 
-  // SEO JSON-LD
   const jsonLd = useMemo(() => {
     const items = products.map(p => ({
       '@type': 'Product',
@@ -125,12 +133,7 @@ export default function SoraAIPromptStore() {
             <a href="#videos" className="hover:underline">วิดีโอ</a>
             <a href="#updates" className="hover:underline">อัปเดต AI</a>
             <a href="#products" className="hover:underline">สินค้า</a>
-            {/* สวิตช์สกุลเงิน */}
-            <button
-              onClick={() => setCurrency(c => c === 'THB' ? 'USD' : 'THB')}
-              className="ml-2 rounded-xl border px-3 py-1.5"
-              title="สลับสกุลเงิน"
-            >
+            <button onClick={toggleCurrency} className="ml-2 rounded-xl border px-3 py-1.5" title="สลับสกุลเงิน">
               {currency}
             </button>
             <Link href={`/pay?pid=${encodeURIComponent(products[0]?.id || 'P-001')}`}
@@ -345,41 +348,42 @@ function Toolbar({ categories, catFilter, setCatFilter, query, setQuery, sortKey
 }
 
 function PriceBlock({ p, currency, rates }) {
-    // คำนวณโครงสร้างราคาแบบรวมกฎ margin + ปัดเศษ แล้วคืนผลทั้ง main/secondary
-  const view = buildDisplayPrice(p, currency, rates);
-  const main = view.main;          // { value, currency, formatted, approx, rateDate }
-  const sec  = view.secondary;     // อาจเป็น null
+  const thb = Number(p?.priceTHB) || 0;
+
+  // USD (คำนวณจาก THB ตามนโยบาย)
+  const usdDerived = (rates && thb > 0)
+    ? computeUSDFromTHBWithPolicy(thb, rates, { marginPct: 0, flatUSD: 0, minUSD: 0, roundingMode: 'ceilPoint99' })
+    : null;
+
+  const rateNote = usdDerived?.rateUpdatedAt
+    ? `• rate: ${new Intl.DateTimeFormat('th-TH',{dateStyle:'medium'}).format(new Date(usdDerived.rateUpdatedAt))}`
+    : '';
+
+  if (currency === 'USD') {
+    return (
+      <div className="mt-3">
+        <div className="font-bold text-lg">
+          {usdDerived ? `~${formatUSD(usdDerived.usd)}` : '—'}
+          <span className="text-gray-400 font-normal"> / USD</span>
+        </div>
+        {usdDerived && (
+          <div className="text-xs text-gray-500 mt-0.5">{rateNote}</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <>
-      {!!main && (
-        <div className="font-bold text-lg">
-          {main.formatted}{" "}
-          <span className="text-gray-400 font-normal">/ {main.currency}</span>
-        </div>
-      )}
-
-      {!!sec && (
+      <div className="font-bold text-lg">
+        {formatTHB(thb)} <span className="text-gray-400 font-normal">/ THB</span>
+      </div>
+      {!!usdDerived && (
         <div className="text-xs text-gray-500 mt-0.5">
-          {sec.approx ? "≈ " : ""}
-          {sec.formatted}
-          {sec.approx && sec.rateDate ? ` • rate: ${new Intl.DateTimeFormat('th-TH',{dateStyle:'medium'}).format(new Date(sec.rateDate))}` : ""}
+          ≈ {formatUSD(usdDerived.usd)} {rateNote}
         </div>
       )}
     </>
-  );
-
-  return (
-    <div className="mt-3">
-      <div className="font-bold">
-        {dp.main.formatted} <span className="text-gray-400 font-normal">/ {dp.main.currency}</span>
-      </div>
-      {dp.secondary && (
-        <div className="text-xs text-gray-500 mt-0.5">
-          {dp.secondary.approx ? '≈ ' : ''}{dp.secondary.formatted} / {dp.secondary.currency}
-        </div>
-      )}
-    </div>
   );
 }
 
